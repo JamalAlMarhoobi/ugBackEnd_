@@ -11,7 +11,7 @@ const corsOptions = {
         const allowedOrigins = [
             'http://localhost:3000',
             'https://smart-tourism-jgps.onrender.com',
-            'https://jamalalmarhoobi.github.io'  // Add your frontend domain here
+            'https://jamalalmarhoobi.github.io'
         ];
         
         // Allow requests with no origin (like mobile apps or curl requests)
