@@ -34,7 +34,7 @@ app.use(express.json()); // Parse incoming JSON requests
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bodies
 
 // Serve static files from the current directory
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname)));
 // Serve images from the images directory
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
@@ -180,7 +180,12 @@ mongoose.connect(mongoURI, {
 
 // Root route to serve the main HTML file
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    try {
+        res.sendFile(path.join(__dirname, 'index.html'));
+    } catch (error) {
+        console.error('Error serving index.html:', error);
+        res.status(404).send('File not found');
+    }
 });
 
 // API endpoint to fetch all spots
