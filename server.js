@@ -34,9 +34,9 @@ app.use(express.json()); // Parse incoming JSON requests
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bodies
 
 // Serve static files from the current directory
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(process.cwd()));
 // Serve images from the images directory
-app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/images', express.static(path.join(process.cwd(), 'images')));
 
 // Get port from environment variable or use default
 const PORT = process.env.PORT || 3000;
@@ -181,7 +181,9 @@ mongoose.connect(mongoURI, {
 // Root route to serve the main HTML file
 app.get('/', (req, res) => {
     try {
-        res.sendFile(path.join(__dirname, 'index.html'));
+        const indexPath = path.join(process.cwd(), 'index.html');
+        console.log('Attempting to serve index.html from:', indexPath);
+        res.sendFile(indexPath);
     } catch (error) {
         console.error('Error serving index.html:', error);
         res.status(404).send('File not found');

@@ -3,7 +3,7 @@ services:
     name: smart-tourism
     env: node
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: node server.js
     rootDir: .
     envVars:
       - key: NODE_ENV
