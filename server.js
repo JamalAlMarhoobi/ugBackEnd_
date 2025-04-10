@@ -5,8 +5,31 @@ const cors = require('cors'); // Import CORS middleware for handling cross-origi
 const path = require('path'); // Import path module for file path operations
 const app = express(); // Create an Express application instance
 
+// Configure CORS with specific options
+const corsOptions = {
+    origin: function (origin, callback) {
+        const allowedOrigins = [
+            'http://localhost:3000',
+            'https://smart-tourism-jgps.onrender.com',
+            'https://jamalalmarhoobi.github.io'  // Add your frontend domain here
+        ];
+        
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+};
+
 // Configure middleware for the Express application
-app.use(cors()); // Enable CORS for all routes
+app.use(cors(corsOptions)); // Enable CORS for all routes
 app.use(express.json()); // Parse incoming JSON requests
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bodies
 
