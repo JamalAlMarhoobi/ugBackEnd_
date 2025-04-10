@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: smart-tourism
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        value: mongodb+srv://JamalMar:Shon%40tives95@cluster0.vr3h8ps.mongodb.net/smartTourism?retryWrites=true&w=majority 

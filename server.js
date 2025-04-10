@@ -13,8 +13,11 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bo
 // Serve static files from the current directory
 app.use(express.static(__dirname));
 
-// MongoDB connection string with credentials and database name
-const mongoURI = 'mongodb+srv://JamalMar:Shon%40tives95@cluster0.vr3h8ps.mongodb.net/smartTourism?retryWrites=true&w=majority';
+// Get port from environment variable or use default
+const PORT = process.env.PORT || 3000;
+
+// MongoDB connection string from environment variable
+const mongoURI = process.env.MONGODB_URI || 'mongodb+srv://JamalMar:Shon%40tives95@cluster0.vr3h8ps.mongodb.net/smartTourism?retryWrites=true&w=majority';
 
 // Define the Spot schema for MongoDB collection
 const spotSchema = new mongoose.Schema({
@@ -542,13 +545,9 @@ app.get('/api/reviews/:spotId', async (req, res) => {
 // Apply global error handler middleware
 app.use(errorHandler);
 
-// Define server port (use environment variable or default to 3000)
-const PORT = process.env.PORT || 3000;
-
-// Server startup function
+// Update the server start code
 const startServer = async () => {
     try {
-        // Connect to MongoDB with configuration
         await mongoose.connect(mongoURI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
@@ -558,8 +557,8 @@ const startServer = async () => {
             retryWrites: true,
             w: 'majority'
         });
+        console.log('Connected to MongoDB');
 
-        // Start Express server
         app.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
         });
@@ -569,5 +568,4 @@ const startServer = async () => {
     }
 };
 
-// Start the server
 startServer();
