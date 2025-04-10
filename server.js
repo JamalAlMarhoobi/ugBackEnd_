@@ -35,6 +35,8 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bo
 
 // Serve static files from the current directory
 app.use(express.static(__dirname));
+// Serve images from the images directory
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Get port from environment variable or use default
 const PORT = process.env.PORT || 3000;
@@ -60,7 +62,16 @@ const spotSchema = new mongoose.Schema({
     website: String, // Official website URL
     createdAt: String, // Creation timestamp
     updatedAt: String, // Last update timestamp
-    image: String // URL to the spot's image
+    image: {
+        type: String,
+        get: function(image) {
+            if (!image) return null;
+            // If the image is already a full URL, return it as is
+            if (image.startsWith('http')) return image;
+            // Otherwise, construct the full URL using the backend URL
+            return `${process.env.BACKEND_URL || 'https://smart-tourism-jgps.onrender.com'}/images/${image}`;
+        }
+    }
 }, { collection: 'spots' }); // Specify the collection name
 
 // Configure schema transformation for JSON responses
