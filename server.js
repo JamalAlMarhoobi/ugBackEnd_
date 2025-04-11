@@ -3,6 +3,7 @@ const express = require('express'); // Import Express.js framework
 const mongoose = require('mongoose'); // Import Mongoose for MongoDB interaction
 const cors = require('cors'); // Import CORS middleware for handling cross-origin requests
 const path = require('path'); // Import path module for file path operations
+const bcrypt = require('bcrypt'); // Import bcrypt for password hashing
 const app = express(); // Create an Express application instance
 
 // Configure CORS with specific options
@@ -341,54 +342,47 @@ app.put('/api/users/:email/preferences', async (req, res) => {
 // User login endpoint
 app.post('/api/login', async (req, res) => {
     try {
-        // Extract login credentials from request
         const { email, password } = req.body;
 
-        console.log('Login attempt for email:', email);
-
-        // Validate required fields
-        if (!email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: 'Email and password are required'
-            });
-        }
-
-        // Find user by email in database
+        // Find user by email
         const user = await User.findOne({ email });
 
         if (!user) {
-            return res.status(401).json({
-                success: false,
-                message: 'The Email you have entered is Not Registered, Please Sign Up'
-            });
+            return res.status(401).json({ success: false, message: 'Invalid email or password' });
         }
 
-        // Note: In production, use proper password hashing
-        if (user.password !== password) {
-            return res.status(401).json({
-                success: false,
-                message: 'The Password you have entered is Incorrect'
+        // Verify password
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            return res.status(401).json({ success: false, message: 'Invalid email or password' });
+        }
+
+        // Check if user has an itinerary, if not create one
+        let itinerary = await Itinerary.findOne({ emailId: email });
+        if (!itinerary) {
+            itinerary = new Itinerary({
+                emailId: email,
+                spots: [],
+                totalCost: 0,
+                createdAt: new Date().toLocaleDateString('en-GB'),
+                updatedAt: new Date().toLocaleDateString('en-GB')
             });
+            await itinerary.save();
         }
 
         // Return success response with user data
         res.json({
             success: true,
-            message: 'Login successful',
             user: {
                 email: user.email,
                 fullName: user.fullName,
-                preferences: user.preferences
+                preferences: user.preferences || []
             }
         });
-
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'An error occurred during login'
-        });
+        res.status(500).json({ success: false, message: 'Login failed' });
     }
 });
 
