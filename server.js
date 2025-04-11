@@ -3,7 +3,6 @@ const express = require('express'); // Import Express.js framework
 const mongoose = require('mongoose'); // Import Mongoose for MongoDB interaction
 const cors = require('cors'); // Import CORS middleware for handling cross-origin requests
 const path = require('path'); // Import path module for file path operations
-const bcrypt = require('bcrypt'); // Import bcrypt for password hashing
 const app = express(); // Create an Express application instance
 
 // Configure CORS with specific options
@@ -342,47 +341,54 @@ app.put('/api/users/:email/preferences', async (req, res) => {
 // User login endpoint
 app.post('/api/login', async (req, res) => {
     try {
+        // Extract login credentials from request
         const { email, password } = req.body;
 
-        // Find user by email
+        console.log('Login attempt for email:', email);
+
+        // Validate required fields
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email and password are required'
+            });
+        }
+
+        // Find user by email in database
         const user = await User.findOne({ email });
 
         if (!user) {
-            return res.status(401).json({ success: false, message: 'Invalid email or password' });
-        }
-
-        // Verify password
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
-        if (!isPasswordValid) {
-            return res.status(401).json({ success: false, message: 'Invalid email or password' });
-        }
-
-        // Check if user has an itinerary, if not create one
-        let itinerary = await Itinerary.findOne({ emailId: email });
-        if (!itinerary) {
-            itinerary = new Itinerary({
-                emailId: email,
-                spots: [],
-                totalCost: 0,
-                createdAt: new Date().toLocaleDateString('en-GB'),
-                updatedAt: new Date().toLocaleDateString('en-GB')
+            return res.status(401).json({
+                success: false,
+                message: 'The Email you have entered is Not Registered, Please Sign Up'
             });
-            await itinerary.save();
+        }
+
+        // Note: In production, use proper password hashing
+        if (user.password !== password) {
+            return res.status(401).json({
+                success: false,
+                message: 'The Password you have entered is Incorrect'
+            });
         }
 
         // Return success response with user data
         res.json({
             success: true,
+            message: 'Login successful',
             user: {
                 email: user.email,
                 fullName: user.fullName,
-                preferences: user.preferences || []
+                preferences: user.preferences
             }
         });
+
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ success: false, message: 'Login failed' });
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred during login'
+        });
     }
 });
 
@@ -459,34 +465,18 @@ app.get('/api/itineraries/:emailId', async (req, res) => {
     try {
         // Extract email ID from request parameters
         const { emailId } = req.params;
-        console.log('Fetching itinerary for email:', emailId);
-
         // Find itinerary in database
-        const itinerary = await Itinerary.findOne({ emailId: emailId });
-        console.log('Found itinerary:', itinerary);
+        const itinerary = await Itinerary.findOne({ emailId });
 
         if (!itinerary) {
-            console.log('No itinerary found for email:', emailId);
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Itinerary not found',
-                emailId: emailId
-            });
+            return res.status(404).json({ success: false, message: 'Itinerary not found' });
         }
 
         // Return itinerary data
-        res.json({ 
-            success: true, 
-            data: itinerary,
-            message: 'Itinerary found successfully'
-        });
+        res.json({ success: true, data: itinerary });
     } catch (error) {
         console.error('Error fetching itinerary:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Failed to fetch itinerary',
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: 'Failed to fetch itinerary' });
     }
 });
 
@@ -582,26 +572,6 @@ app.get('/api/reviews/:spotId', async (req, res) => {
         res.status(500).json({
             success: false,
             message: error.message || 'Failed to fetch reviews'
-        });
-    }
-});
-
-// Temporary endpoint to list all itineraries (for debugging)
-app.get('/api/debug/itineraries', async (req, res) => {
-    try {
-        const itineraries = await Itinerary.find({});
-        console.log('All itineraries:', itineraries);
-        res.json({
-            success: true,
-            count: itineraries.length,
-            data: itineraries
-        });
-    } catch (error) {
-        console.error('Error listing itineraries:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to list itineraries',
-            error: error.message
         });
     }
 });
