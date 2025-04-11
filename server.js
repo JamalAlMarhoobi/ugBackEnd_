@@ -459,18 +459,34 @@ app.get('/api/itineraries/:emailId', async (req, res) => {
     try {
         // Extract email ID from request parameters
         const { emailId } = req.params;
+        console.log('Fetching itinerary for email:', emailId);
+
         // Find itinerary in database
-        const itinerary = await Itinerary.findOne({ emailId });
+        const itinerary = await Itinerary.findOne({ emailId: emailId });
+        console.log('Found itinerary:', itinerary);
 
         if (!itinerary) {
-            return res.status(404).json({ success: false, message: 'Itinerary not found' });
+            console.log('No itinerary found for email:', emailId);
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Itinerary not found',
+                emailId: emailId
+            });
         }
 
         // Return itinerary data
-        res.json({ success: true, data: itinerary });
+        res.json({ 
+            success: true, 
+            data: itinerary,
+            message: 'Itinerary found successfully'
+        });
     } catch (error) {
         console.error('Error fetching itinerary:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch itinerary' });
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to fetch itinerary',
+            error: error.message
+        });
     }
 });
 
@@ -566,6 +582,26 @@ app.get('/api/reviews/:spotId', async (req, res) => {
         res.status(500).json({
             success: false,
             message: error.message || 'Failed to fetch reviews'
+        });
+    }
+});
+
+// Temporary endpoint to list all itineraries (for debugging)
+app.get('/api/debug/itineraries', async (req, res) => {
+    try {
+        const itineraries = await Itinerary.find({});
+        console.log('All itineraries:', itineraries);
+        res.json({
+            success: true,
+            count: itineraries.length,
+            data: itineraries
+        });
+    } catch (error) {
+        console.error('Error listing itineraries:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to list itineraries',
+            error: error.message
         });
     }
 });
