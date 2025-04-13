@@ -467,42 +467,15 @@ app.get('/api/itineraries/:emailId', async (req, res) => {
     try {
         // Extract email ID from request parameters
         const { emailId } = req.params;
-        console.log('Fetching itinerary for email:', emailId);
-        
         // Find itinerary in database
         const itinerary = await Itinerary.findOne({ emailId });
 
         if (!itinerary) {
-            console.log('No itinerary found for email:', emailId);
-            return res.json({ 
-                success: true, 
-                data: { 
-                    spots: [], 
-                    totalCost: 0 
-                } 
-            });
+            return res.status(404).json({ success: false, message: 'Itinerary not found' });
         }
 
-        // Fetch complete spot data for each spot in the itinerary
-        const spotsWithDetails = await Promise.all(itinerary.spots.map(async (spot) => {
-            const spotDetails = await Spot.findOne({ spotId: spot.spotId });
-            return {
-                ...spot,
-                location: spotDetails?.location || { city: 'Unknown' },
-                title: spotDetails?.title || spot.title,
-                price: spotDetails?.price || spot.price
-            };
-        }));
-
-        console.log('Found itinerary with spots:', spotsWithDetails);
-        // Return itinerary data with complete spot details
-        res.json({ 
-            success: true, 
-            data: {
-                spots: spotsWithDetails,
-                totalCost: itinerary.totalCost
-            }
-        });
+        // Return itinerary data
+        res.json({ success: true, data: itinerary });
     } catch (error) {
         console.error('Error fetching itinerary:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch itinerary' });
@@ -632,6 +605,3 @@ const startServer = async () => {
 };
 
 startServer();
-
-// Export the app for testing
-module.exports = app;
