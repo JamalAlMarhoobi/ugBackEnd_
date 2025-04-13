@@ -483,9 +483,26 @@ app.get('/api/itineraries/:emailId', async (req, res) => {
             });
         }
 
-        console.log('Found itinerary:', itinerary);
-        // Return itinerary data
-        res.json({ success: true, data: itinerary });
+        // Fetch complete spot data for each spot in the itinerary
+        const spotsWithDetails = await Promise.all(itinerary.spots.map(async (spot) => {
+            const spotDetails = await Spot.findOne({ spotId: spot.spotId });
+            return {
+                ...spot,
+                location: spotDetails?.location || { city: 'Unknown' },
+                title: spotDetails?.title || spot.title,
+                price: spotDetails?.price || spot.price
+            };
+        }));
+
+        console.log('Found itinerary with spots:', spotsWithDetails);
+        // Return itinerary data with complete spot details
+        res.json({ 
+            success: true, 
+            data: {
+                spots: spotsWithDetails,
+                totalCost: itinerary.totalCost
+            }
+        });
     } catch (error) {
         console.error('Error fetching itinerary:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch itinerary' });
