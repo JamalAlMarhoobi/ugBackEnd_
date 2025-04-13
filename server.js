@@ -467,13 +467,23 @@ app.get('/api/itineraries/:emailId', async (req, res) => {
     try {
         // Extract email ID from request parameters
         const { emailId } = req.params;
+        console.log('Fetching itinerary for email:', emailId);
+        
         // Find itinerary in database
         const itinerary = await Itinerary.findOne({ emailId });
 
         if (!itinerary) {
-            return res.status(404).json({ success: false, message: 'Itinerary not found' });
+            console.log('No itinerary found for email:', emailId);
+            return res.json({ 
+                success: true, 
+                data: { 
+                    spots: [], 
+                    totalCost: 0 
+                } 
+            });
         }
 
+        console.log('Found itinerary:', itinerary);
         // Return itinerary data
         res.json({ success: true, data: itinerary });
     } catch (error) {
