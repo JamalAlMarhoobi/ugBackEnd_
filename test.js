@@ -38,11 +38,15 @@ describe('Smart Tourism Platform Tests', () => {
     // Setup and teardown
     before(async () => {
         // Connect to test database
-        await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://JamalMar:Shon%40tives95@cluster0.vr3h8ps.mongodb.net/smartTourism?retryWrites=true&w=majority');
+        const testDbUri = 'mongodb+srv://JamalMar:Shon%40tives95@cluster0.vr3h8ps.mongodb.net/smartTourism_test?retryWrites=true&w=majority';
+        await mongoose.connect(testDbUri);
+        
+        // Clear test database
+        await mongoose.connection.dropDatabase();
     });
 
     after(async () => {
-        // Clean up test data
+        // Clean up test database
         await mongoose.connection.dropDatabase();
         await mongoose.connection.close();
     });
