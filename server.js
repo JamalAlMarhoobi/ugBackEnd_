@@ -13,10 +13,10 @@ const corsOptions = {
             'https://smart-tourism-jgps.onrender.com',
             'https://jamalalmarhoobi.github.io'
         ];
-        
+
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        
+
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
@@ -66,7 +66,7 @@ const spotSchema = new mongoose.Schema({
     updatedAt: String, // Last update timestamp
     image: {
         type: String,
-        get: function(image) {
+        get: function (image) {
             if (!image) return null;
             // If the image is already a full URL, return it as is
             if (image.startsWith('http')) return image;
@@ -605,3 +605,6 @@ const startServer = async () => {
 };
 
 startServer();
+
+// Export the app for testing
+module.exports = app;
